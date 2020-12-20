@@ -62,7 +62,9 @@ class TWSEFetcher(BaseFetcher):
             sleep_time = random.random()/2 + 0.5
             if (qtime - self.last_query_time).total_seconds() < self.min_seconds_per_query:
                 sleep_time += (qtime - self.last_query_time).total_seconds()
+            print(f'sleep for {sleep_time}')
             time.sleep(sleep_time)
+            print('awake')
             r = requests.get(self.REPORT_URL, params=params,
                              proxies=get_proxies())
             self.last_query_time = datetime.datetime.now()
