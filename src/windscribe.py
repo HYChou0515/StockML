@@ -59,7 +59,7 @@ class WindscribeVpn:
 
     @staticmethod
     def _login_windscribe_1():
-        shell = subprocess.run(['expect', '/home/hychou/windscribe/autologin'], capture_output=True)
+        shell = subprocess.run(['expect', '/windscribe_login'], capture_output=True)
         checked_stdout = '\n'.join(shell.stdout.decode('utf-8').split('\n')[1:])
         if 'API Error' in checked_stdout:
             print('Windscribe login failed')
