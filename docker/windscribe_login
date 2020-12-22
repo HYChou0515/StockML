@@ -1,0 +1,13 @@
+#!/usr/bin/expect
+
+spawn windscribe login
+
+expect "Windscribe Username: "
+
+send -- "${WINDSCRIBE_USR}\r"
+
+expect "Windscribe Password: "
+
+send -- "${WINDSCRIBE_PASS}\r"
+
+expect eof

@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 
 import pandas as pd
 import twstock as ts
@@ -7,6 +8,7 @@ import twstock as ts
 __all__ = ['get_twse', 'StockInfoGetter']
 
 from const import RESOURCE_ROOT
+from windscribe import WindscribeVpn
 
 PATH_STOCK_INFO = os.path.join(RESOURCE_ROOT, 'stock_info.h5')
 PATH_STOCK = os.path.join(RESOURCE_ROOT, 'stock.h5')
@@ -22,6 +24,23 @@ def get_h5_name(year, month):
 
 class StockInfoGetter:
     _TWSE = None
+    _vpn = WindscribeVpn()
+
+    @classmethod
+    def _change_vpn(cls):
+        while True:
+            try:
+                cls._vpn.change_vpn_via_windscribe()
+            except WindscribeVpn as e:
+                print(e)
+                print('sleep for 5 seconds')
+                time.sleep(5)
+            try:
+                cls._vpn.login_windscribe()
+            except WindscribeVpn as e:
+                print(e)
+                print('sleep for 5 seconds')
+                time.sleep(5)
 
     @classmethod
     def get_twse(cls):
@@ -45,17 +64,21 @@ class StockInfoGetter:
                 done = set()
                 pickle.dump((df_s, done), open(f'{path}.done.pkl', 'wb'))
             todo = todo.difference(done)
+
             for i, stock_code in enumerate(todo):
                 try:
                     stock = ts.Stock(stock_code, initial_fetch=False).fetch(year, month)
                     df_s.append(pd.DataFrame(stock))
                     df_s[-1]['code'] = pd.Series(stock_code, index=df_s[-1].index, dtype=stock_code_dtype)
                     done.add(stock_code)
-                    print(stock_code)
+                    print(f'{stock_code} -- {100*len(done)/len(cls.get_twse().index):g}%')
                     pickle.dump((df_s, done), open(f'{path}.done.pkl', 'wb'))
+                except ConnectionError as e:
+                    print(e)
+                    cls._change_vpn()
                 except Exception as e:
                     print(e)
-                print(f'{100*(i+1)/len(cls.get_twse().index):g}%')
+                    cls._change_vpn()
 
             df = pd.concat(df_s)
             df.set_index(['code', 'date'])
@@ -63,8 +86,6 @@ class StockInfoGetter:
         else:
             df = pd.read_hdf(path, get_h5_key_name(year, month))
         return df
-
-
 
 
 def get_twse():
