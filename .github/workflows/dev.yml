@@ -17,6 +17,7 @@ jobs:
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
+    environment: dev
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -28,15 +29,18 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
           export_default_credentials: true
-          
+
+      - name: Gcloud login
+        run: gcloud auth configure-docker
+
       - name: Build Docker Image and Push
-        with:
+        run: |
+          docker build -t asia.gcr.io/angelic-shift-296514/stockml:v0 -f docker/app/Dockerfile ..
+          docker push asia.gcr.io/angelic-shift-296514/stockml:v0
+        env:
           WINDSCRIBE_USR: ${{ secrets.WINDSCRIBE_USR }}
           WINDSCRIBE_PASS: ${{ secrets.WINDSCRIBE_PASS }}
-        run: |
-          docker build -t asia.gcr.io/angelic-shift-296514/stockml:v0 -v ${PWD}/../StockML:/StockML docker/app/
-          docker push asia.gcr.io/angelic-shift-296514/stockml:v0
           
       - name: Create gcloud instance with container
-        run: gcloud compute instances create-with-container stockml-1 --container-image asia.gcr.io/angelic-shift-296514/stockml:v0
+        run: gcloud compute instances create-with-container stockml-1 --container-image asia.gcr.io/angelic-shift-296514/stockml:v0 --zone asia-east1-a
   
