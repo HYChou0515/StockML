@@ -14,7 +14,7 @@ apt-get update &&
 
 apt-get install -y windscribe-cli expect resolvconf &&
 
-envsubst < /tmp/windscribe_login > /windscribe_login &&
+cp /tmp/windscribe_login > /windscribe_login.template &&
 
 rm -rf /var/lib/apt/lists/* &&
 
