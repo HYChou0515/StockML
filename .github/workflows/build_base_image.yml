@@ -1,0 +1,26 @@
+name: build_base_image
+
+on:
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        environment: dev
+        
+        steps:
+            - uses: actions/checkout@v2
+            - name: Set up Cloud SDK
+              uses: google-github-actions/setup-gcloud@master
+              with:
+                project_id: ${{ secrets.GCP_PROJECT_ID }}
+                service_account_key: ${{ secrets.GCP_SA_KEY }}
+                export_default_credentials: true
+      
+            - name: Gcloud login
+              run: gcloud auth configure-docker
+
+            - name: Build Base Docker Image and Push
+              run: |
+                  docker build -t asia.gcr.io/angelic-shift-296514/stockml-base:v0 -f docker/base/Dockerfile docker/base/
+                  docker push asia.gcr.io/angelic-shift-296514/stockml-base:v0
