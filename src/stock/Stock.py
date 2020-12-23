@@ -8,7 +8,7 @@ import twstock as ts
 __all__ = ['get_twse', 'StockInfoGetter']
 
 from const import RESOURCE_ROOT
-from windscribe import WindscribeVpn
+from windscribe import WindscribeVpn, WindscribeException
 
 PATH_STOCK_INFO = os.path.join(RESOURCE_ROOT, 'stock_info.h5')
 PATH_STOCK = os.path.join(RESOURCE_ROOT, 'stock.h5')
@@ -31,13 +31,13 @@ class StockInfoGetter:
         while True:
             try:
                 cls._vpn.change_vpn_via_windscribe()
-            except WindscribeVpn as e:
+            except WindscribeException as e:
                 print(e)
                 print('sleep for 5 seconds')
                 time.sleep(5)
             try:
                 cls._vpn.login_windscribe()
-            except WindscribeVpn as e:
+            except WindscribeException as e:
                 print(e)
                 print('sleep for 5 seconds')
                 time.sleep(5)
