@@ -34,12 +34,13 @@ jobs:
         run: gcloud auth configure-docker
 
       - name: Build Docker Image and Push
-        run: |
-          docker build -t asia.gcr.io/angelic-shift-296514/stockml:v0 -f docker/app/Dockerfile ..
-          docker push asia.gcr.io/angelic-shift-296514/stockml:v0
         env:
           WINDSCRIBE_USR: ${{ secrets.WINDSCRIBE_USR }}
           WINDSCRIBE_PASS: ${{ secrets.WINDSCRIBE_PASS }}
+        run: |
+          envsubst < docker/app/Dockerfile.template > docker/app/Dockerfile
+          docker build -t asia.gcr.io/angelic-shift-296514/stockml:v0 -f docker/app/Dockerfile ..
+          docker push asia.gcr.io/angelic-shift-296514/stockml:v0
           
       - name: Create gcloud instance with container
         run: gcloud compute instances create-with-container stockml-1 --container-image asia.gcr.io/angelic-shift-296514/stockml:v0 --zone asia-east1-a
