@@ -1,6 +1,5 @@
 FROM asia.gcr.io/angelic-shift-296514/stockml-base:v0
 
-ENV WINDSCRIBE_USR="${WINDSCRIBE_USR}" WINDSCRIBE_PASS="${WINDSCRIBE_PASS}"
 COPY StockML /StockML
 RUN bash -x /StockML/docker/app/install.sh
 
