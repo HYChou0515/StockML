@@ -1,0 +1,10 @@
+export IMAGE_FAMILY="ubuntu-minimal-1804-lts"
+export ZONE="asia-east1-b"
+export INSTANCE_NAME="stockml-1"
+export INSTANCE_TYPE="e2-standard-2"
+gcloud compute instances create $INSTANCE_NAME \
+        --zone=$ZONE \
+        --image-family=$IMAGE_FAMILY \
+        --image-project=ubuntu-os-cloud \
+        --machine-type=$INSTANCE_TYPE \
+        --boot-disk-size=120GB
