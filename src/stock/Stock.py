@@ -40,8 +40,8 @@ class Fetcher:
     def get_proxy(self):
         if self._cnt != 0 and self._cnt % len(self._proxy) == 0:
             print(f'trial time = {self._cnt}')
-            print(self._err)
-            self._sleep_time += 10.0 ** (1.0 * self._cnt % len(self._proxy))
+            print('\n'.join(f'{k}: {v}' for k, v in self._err.items()))
+            self._sleep_time += 10.0 ** (self._cnt / len(self._proxy))
             print(f'sleep time increased to {self._sleep_time}')
         time.sleep(self._sleep_time)
         p = self._proxy[self._head]
@@ -52,9 +52,9 @@ class Fetcher:
     def purify(r):
         print('not implemented')
 
-    def get_data_from_https_request(self, q, params=None):
+    def get_data_from_https_request(self, q, params=None, retry_time=10):
         self.prepare_proxy()
-        while True:
+        for t in range(retry_time):
             pxy = self.get_proxy()
             for i in range(20):
                 try:
@@ -65,10 +65,11 @@ class Fetcher:
                     print('\n'.join(f'{k}: {v}' for k, v in self._proxy_avail.items()))
                     return data
                 except Exception as e:
-                    if e not in self._err:
-                        self._err[e] = 1
+                    print(f'Error occur: {e}')
+                    if str(e) not in self._err:
+                        self._err[str(e)] = 1
                     else:
-                        self._err[e] += 1
+                        self._err[str(e)] += 1
                 print('.', end='')
             print('')
 
@@ -134,19 +135,12 @@ class StockInfoGetter:
             todo = todo.difference(done)
 
             for i, stock_code in enumerate(todo):
-                try:
-                    stock = fetcher.get_stock(stock_code, year, month)
-                    df_s.append(pd.DataFrame(stock))
-                    df_s[-1]['code'] = pd.Series(stock_code, index=df_s[-1].index, dtype=stock_code_dtype)
-                    done.add(stock_code)
-                    print(f'{stock_code} -- {100*len(done)/len(cls.get_twse().index):g}%')
-                    pickle.dump((df_s, done), open(f'{path}.done.pkl', 'wb'))
-                except ConnectionError as e:
-                    print(e)
-                    cls._change_vpn()
-                except Exception as e:
-                    print(e)
-                    cls._change_vpn()
+                stock = fetcher.get_stock(stock_code, year, month)
+                df_s.append(pd.DataFrame(stock))
+                df_s[-1]['code'] = pd.Series(stock_code, index=df_s[-1].index, dtype=stock_code_dtype)
+                done.add(stock_code)
+                print(f'{stock_code} -- {100*len(done)/len(cls.get_twse().index):g}%')
+                pickle.dump((df_s, done), open(f'{path}.done.pkl', 'wb'))
 
             df = pd.concat(df_s)
             df.set_index(['code', 'date'])
